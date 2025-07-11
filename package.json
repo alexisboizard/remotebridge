@@ -1,0 +1,24 @@
+{
+  "name": "remotebridge",
+  "version": "1.0.0",
+  "description": "A software to handle SSH, RDP, FTP connexion",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexisboizard/remotebridge.git"
+  },
+  "author": "Alexis BOIZARD",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexisboizard/remotebridge/issues"
+  },
+  "homepage": "https://github.com/alexisboizard/remotebridge#readme",
+  "devDependencies": {
+    "electron": "^37.2.1",
+    "xterm": "^5.3.0"
+  }
+}
