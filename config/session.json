@@ -1,0 +1,22 @@
+{
+    "sessions": [
+        {
+            "session_id" : "0001",
+            "session_type": "ssh",
+            "session_name": "SSH to Server A",
+            "host": "",
+            "port": 22,
+            "username": "user_a",
+            "password": "password_a"
+        },
+        {
+            "session_id" : "0002",
+            "session_type": "rdp",
+            "session_name": "RDP to Server B",
+            "host": "",
+            "port": 3389,
+            "username": "user_b",
+            "password": "password_b"
+        }
+    ]
+}
