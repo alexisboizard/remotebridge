@@ -9,8 +9,10 @@ ul {
 }
 li {
     margin: 0;
+    list-style-type: none;
+
 }
-li>span:hover {
+li>span:hover, .selected {
     cursor: pointer;
     background-color: #e0e0e0;
 }
@@ -37,4 +39,22 @@ li>span:hover {
     padding: 10px;
     background-color: #e0e0e0;
     border-bottom: 1px solid #ccc;
+}
+.toggle {
+  cursor: pointer;
+  display: inline-block;
+  width: 1em;
+  margin-right: 5px;
+}
+.folder.collapsed > .toggle::before {
+  content: "▸";
+}
+.folder > .toggle::before {
+  content: "▾";
+}
+.children.collapsed {
+  display: none;
+}
+.folder.no-toggle::before {
+  content: "";
 }

@@ -23,13 +23,13 @@
         <input type="text" id="sessionName" name="sessionName" required>
 
         <label for="sessionType">Type de Session:</label>
-        <input type="text" id="sessionType" name="sessionType" required>
+        <input list="sessionTypeList" id="sessionType" name="sessionType" required>
 
         <label for="host">Hôte:</label>
         <input type="text" id="host" name="host">
 
         <label for="port">Port:</label>
-        <input type="number" id="port" name="port">
+        <input list="portList" id="port" name="port">
 
         <label for="username">Nom d'utilisateur:</label>
         <input type="text" id="username" name="username">
@@ -39,7 +39,16 @@
 
         <button type="submit">Créer</button>
     </form>
+    <datalist id="sessionTypeList">
+        <option value="SSH">SSH</option>
+        <option value="RDP">RDP</option>
+    </datalist>
 
+    <datalist id="portList">
+        <option value="22">22</option>
+        <option value="3389">3389</option>
+
+    </datalist>
     <script src="js/side_menu.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
 let mainWindow;
@@ -36,6 +36,7 @@ function createWindow() {
     },
   });
   mainWindow.loadFile(path.join(__dirname, "ui/index.html"));
+  mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(createWindow);
@@ -52,7 +53,7 @@ app.on("activate", () => {
   }
 });
 
-function createPopupWindow() {
+function createPopupWindow(selectedElement) {
   const popupWindow = new BrowserWindow({
     width: 900,
     height: 420,
@@ -63,9 +64,17 @@ function createPopupWindow() {
       contextIsolation: false,
     },
   });
-
+  popupWindow.webContents.on("did-finish-load", () => {
+    popupWindow.webContents.send("selected-element", selectedElement);
+  });
+  console.log("Opening popup for element:", selectedElement);
   popupWindow.loadFile("ui/create_session.html");
-
+  // Fermer la popup si l'utilisateur clique en dehors ou presse Échap
+  popupWindow.webContents.on("before-input-event", (event, input) => {
+    if (input.key === "Escape" || input.type === "mouseDownOutside") {
+      popupWindow.close();
+    }
+  });
   // À la fermeture de la popup, notifier la fenêtre principale
   popupWindow.on("closed", () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -74,13 +83,75 @@ function createPopupWindow() {
   });
 }
 
-ipcMain.on("open-popup", (event) => {
-  createPopupWindow();
+ipcMain.on("open-popup", (e, selected_element) => {
+  createPopupWindow(selected_element);
 });
 
-// Ajout : relayer le message de refresh à toutes les fenêtres
 ipcMain.on("refresh-structure", (event) => {
   BrowserWindow.getAllWindows().forEach((win) => {
     win.webContents.send("refresh-structure");
   });
+});
+
+// Gérer le menu contextuel personnalisé
+ipcMain.handle("show-context-menu", (event, contextType, contextData) => {
+  const template = [];
+
+  if (contextType === "folder") {
+    template.push(
+      {
+        label: "Ajouter une session",
+        click: () => {
+          event.sender.send("context-action", {
+            action: "add-session",
+            ...contextData,
+          });
+        },
+      },
+      {
+        label: "Renommer le dossier",
+        click: () => {
+          event.sender.send("context-action", {
+            action: "rename-folder",
+            ...contextData,
+          });
+        },
+      },
+      {
+        label: "Supprimer le dossier",
+        click: () => {
+          event.sender.send("context-action", {
+            action: "delete-folder",
+            ...contextData,
+          });
+        },
+      }
+    );
+  }
+
+  if (contextType === "session") {
+    template.push(
+      {
+        label: "Renommer la session",
+        click: () => {
+          event.sender.send("context-action", {
+            action: "rename-session",
+            ...contextData,
+          });
+        },
+      },
+      {
+        label: "Supprimer la session",
+        click: () => {
+          event.sender.send("context-action", {
+            action: "delete-session",
+            ...contextData,
+          });
+        },
+      }
+    );
+  }
+
+  const menu = Menu.buildFromTemplate(template);
+  menu.popup(BrowserWindow.fromWebContents(event.sender));
 });
