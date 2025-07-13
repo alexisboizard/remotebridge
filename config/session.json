@@ -1,22 +1,158 @@
 {
-    "sessions": [
-        {
-            "session_id" : "0001",
-            "session_type": "ssh",
-            "session_name": "SSH to Server A",
-            "host": "",
-            "port": 22,
-            "username": "user_a",
-            "password": "password_a"
-        },
-        {
-            "session_id" : "0002",
-            "session_type": "rdp",
-            "session_name": "RDP to Server B",
-            "host": "",
-            "port": 3389,
-            "username": "user_b",
-            "password": "password_b"
-        }
-    ]
+  "sessions": [
+    {
+      "session_id": "S175234205",
+      "session_name": "aa",
+      "session_type": "aa",
+      "host": "aa",
+      "port": "1",
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "root",
+      "parent": "root"
+    },
+    {
+      "session_id": "S175234205",
+      "session_name": "bb",
+      "session_type": "aa",
+      "host": "aa",
+      "port": "1",
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "F175240563",
+      "parent": "F175240563"
+    },
+    {
+      "session_id": "S175240641",
+      "session_name": "cc",
+      "session_type": "aa",
+      "host": "aa",
+      "port": "11",
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240656",
+      "session_name": "dd",
+      "session_type": "dd",
+      "host": "dd",
+      "port": "11",
+      "username": "dd",
+      "password": "dd",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240666",
+      "session_name": "ff",
+      "session_type": "ff",
+      "host": "ff",
+      "port": "1",
+      "username": "ff",
+      "password": "ff",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240678",
+      "session_name": "hh",
+      "session_type": "hh",
+      "host": "aa",
+      "port": "11",
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240683",
+      "session_name": "vv",
+      "session_type": "vv",
+      "host": "vv",
+      "port": "11",
+      "username": "vv",
+      "password": "vv",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240697",
+      "session_name": "dd",
+      "session_type": "dd",
+      "host": "dd",
+      "port": "1",
+      "username": "dd",
+      "password": "dd",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240708",
+      "session_name": "aaa",
+      "session_type": "aa",
+      "host": "aa",
+      "port": "1",
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240721",
+      "session_name": "bbb",
+      "session_type": "b",
+      "host": "bb",
+      "port": "1",
+      "username": "vv",
+      "password": "bb",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175240724",
+      "session_name": "ccc",
+      "session_type": "a",
+      "host": "a",
+      "port": "1",
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "root"
+    },
+    {
+      "session_id": "S175241233",
+      "session_name": "botein",
+      "session_type": "aa",
+      "host": "aa",
+      "port": "11",
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "root"
+    }
+  ],
+  "folders": [
+    {
+      "folder_id": "root",
+      "folder_name": "Racine",
+      "parent": null
+    },
+    {
+      "folder_id": "F175240563",
+      "folder_name": "Nouveau Dossier",
+      "parent": "root"
+    },
+    {
+      "folder_id": "F175240640",
+      "folder_name": "Nouveau Dossier",
+      "parent": "root"
+    },
+    {
+      "folder_id": "F175240648",
+      "folder_name": "Nouveau",
+      "parent": "root"
+    },
+    {
+      "folder_id": "F175240665",
+      "folder_name": "Nouveau Dossier",
+      "parent": "root"
+    },
+    {
+      "folder_id": "F175241232",
+      "folder_name": "Nouveau Dossier",
+      "parent": "root"
+    }
+  ]
 }

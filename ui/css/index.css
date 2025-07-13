@@ -1,0 +1,40 @@
+body{
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+}
+ul {
+    list-style-type: none;
+}
+li {
+    margin: 0;
+}
+li>span:hover {
+    cursor: pointer;
+    background-color: #e0e0e0;
+}
+.folder {
+    font-weight: initial;  
+}
+#side_menu {
+    display: flex;
+    flex-direction: column;
+    width: 20%;
+    height: 100vh;
+    background-color: #f0f0f0;
+    border-right: 1px solid #ccc;
+}
+#terminal {
+    width: 80%;
+    height: 100vh;
+    display: none; /* Initially hidden */
+}
+
+#creation_menu{
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #e0e0e0;
+    border-bottom: 1px solid #ccc;
+}
