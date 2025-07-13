@@ -3,6 +3,7 @@ body{
     flex-direction: row;
     margin: 0;
     padding: 0;
+    max-height: 100vh;
 }
 ul {
     list-style-type: none;
@@ -22,15 +23,10 @@ li>span:hover, .selected {
 #side_menu {
     display: flex;
     flex-direction: column;
-    width: 20%;
-    height: 100vh;
+    width: 20vw;
+    max-height: 100vh;
     background-color: #f0f0f0;
     border-right: 1px solid #ccc;
-}
-#terminal {
-    width: 80%;
-    height: 100vh;
-    display: none; /* Initially hidden */
 }
 
 #creation_menu{
@@ -57,4 +53,54 @@ li>span:hover, .selected {
 }
 .folder.no-toggle::before {
   content: "";
+}
+
+.tabs-bar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  border: 1px solid #212020;
+  padding: 6px 10px;
+  margin-right: 4px;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+}
+
+.tab.active {
+  font-weight: bold;
+}
+
+.tab .close-btn {
+  margin-left: 8px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.tabs-container {
+  width: 100%;
+  height: calc(100% - 40px); /* ajuster selon la hauteur de la barre d’onglets */
+  position: relative;
+}
+
+.terminal-tab {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+}
+
+.terminal-tab.active {
+  display: block;
+}
+
+#tabs{
+    width: 80vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }

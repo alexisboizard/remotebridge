@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { Client } = require("ssh2");
+//const pty = require("node-pty");
 let mainWindow;
 
 ipcMain.on("save-data", (event, data) => {
@@ -33,6 +35,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      preload: "preload.js",
     },
   });
   mainWindow.loadFile(path.join(__dirname, "ui/index.html"));
@@ -67,8 +70,6 @@ function createPopupWindow(selectedElement) {
   popupWindow.webContents.on("did-finish-load", () => {
     popupWindow.webContents.send("selected-element", selectedElement);
   });
-  console.log("Opening popup for element:", selectedElement);
-  popupWindow.loadFile("ui/create_session.html");
   // Fermer la popup si l'utilisateur clique en dehors ou presse Échap
   popupWindow.webContents.on("before-input-event", (event, input) => {
     if (input.key === "Escape" || input.type === "mouseDownOutside") {
@@ -81,6 +82,7 @@ function createPopupWindow(selectedElement) {
       mainWindow.webContents.send("refresh-structure");
     }
   });
+  popupWindow.loadFile("ui/html/create_session.html");
 }
 
 ipcMain.on("open-popup", (e, selected_element) => {
@@ -132,6 +134,24 @@ ipcMain.handle("show-context-menu", (event, contextType, contextData) => {
   if (contextType === "session") {
     template.push(
       {
+        label: "Ouvrir la session",
+        click: () => {
+          event.sender.send("context-action", {
+            action: "open-session",
+            ...contextData,
+          });
+        },
+      },
+      {
+        label: "Editer la session",
+        click: () => {
+          event.sender.send("context-action", {
+            action: "edit-session",
+            ...contextData,
+          });
+        },
+      },
+      {
         label: "Renommer la session",
         click: () => {
           event.sender.send("context-action", {
@@ -154,4 +174,32 @@ ipcMain.handle("show-context-menu", (event, contextType, contextData) => {
 
   const menu = Menu.buildFromTemplate(template);
   menu.popup(BrowserWindow.fromWebContents(event.sender));
+});
+
+// Gérer les connexions SSH
+ipcMain.handle("start-ssh-session", (event, config) => {
+  const win = event.sender;
+
+  const conn = new Client();
+  conn.on("ready", () => {
+    const shell = conn.shell((err, stream) => {
+      if (err) return;
+
+      // Buffer de communication
+      stream.on("data", (data) => {
+        win.send("ssh-data", data.toString());
+      });
+
+      // Réception depuis xterm (frontend)
+      ipcMain.on("ssh-input", (event2, input) => {
+        stream.write(input);
+      });
+    });
+  });
+  conn.connect({
+    host: config.host,
+    port: config.port,
+    username: config.username,
+    password: config.password,
+  });
 });

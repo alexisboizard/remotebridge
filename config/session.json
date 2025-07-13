@@ -3,22 +3,22 @@
     {
       "session_id": "S175242582",
       "session_name": "TEST 2",
-      "session_type": "A",
-      "host": "A",
-      "port": "1",
-      "username": "aa",
-      "password": "aa",
+      "session_type": "SSH",
+      "host": "192.168.1.149",
+      "port": "22",
+      "username": "alexisboizard",
+      "password": "",
       "folder_id": "F175240563"
     },
     {
-      "session_id": "S175242748",
+      "session_id": "S175244367",
       "session_name": "TEST 1",
       "session_type": "SSH",
-      "host": "10",
+      "host": "192.168.1.1",
       "port": "22",
-      "username": "",
-      "password": "",
-      "folder_id": "F1752425830202"
+      "username": "aa",
+      "password": "aa",
+      "folder_id": "F175240563"
     }
   ],
   "folders": [
@@ -31,16 +31,6 @@
       "folder_id": "F175240563",
       "folder_name": "Active Directory",
       "parent": "root"
-    },
-    {
-      "folder_id": "F1752422462435",
-      "folder_name": "Nouveau Dossier",
-      "parent": "root"
-    },
-    {
-      "folder_id": "F1752425830202",
-      "folder_name": "Nouveau Dossier",
-      "parent": "F175240563"
     },
     {
       "folder_id": "F1752425961267",

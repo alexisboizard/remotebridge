@@ -1,10 +1,12 @@
 const saved_sessions_file = "../config/session.json";
 const { ipcRenderer, ipcMain } = require("electron");
 const { glob } = require("original-fs");
+const { Terminal } = require("xterm");
 
 let global_data = { sessions: [], folders: [] };
 let selected_element = [null, null];
 let hoveredElement = null;
+const terminals = {}; // pour gérer plusieurs onglets si nécessaire
 
 async function loadData() {
   global_data = await ipcRenderer.invoke("load-data");
@@ -244,6 +246,22 @@ ipcRenderer.on("context-action", (event, args) => {
   if (args.action === "rename-session") {
     enableRename(document.getElementById(args.session_id), args.session_id);
   }
+  if (args.action === "open-session") {
+    global_data.sessions.forEach((session) => {
+      if (session.session_id === args.session_id) {
+        openTab(session);
+      }
+    });
+  }
+  if (args.action === "edit-session") {
+    const session = global_data.sessions.find(
+      (session) => session.session_id === args.session_id
+    );
+    if (session) {
+    }
+    // Ouvrir une fenêtre de modification de session
+    ipcRenderer.invoke("open-edit-session-popup", session);
+  }
 
   // Ajoute ici d’autres cas si besoin
 });
@@ -288,7 +306,7 @@ document.addEventListener("contextmenu", function (e) {
 });
 
 document.addEventListener("click", function (e) {
-  selected_element = null;
+  selected_element = [null, null];
   if (e.target.closest(".folder") || e.target.closest(".session")) {
     clearSelection();
     e.target.classList.add("selected");
@@ -304,7 +322,7 @@ document.addEventListener("click", function (e) {
     !e.target.closest(".menu_button")
   ) {
     clearSelection();
-    selected_element = null;
+    selected_element = [null, null];
   }
 });
 
@@ -367,3 +385,103 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 loadData();
+
+document.addEventListener("dblclick", (e) => {
+  const sessionEl = e.target.closest(".session");
+
+  if (sessionEl) {
+    const sessionId =
+      selected_element[0] == null && hoveredElement != null
+        ? hoveredElement.id
+        : selected_element[0].id;
+
+    global_data.sessions.forEach((session) => {
+      if (session.session_id === sessionId) {
+        openTab(session);
+      }
+    });
+  }
+});
+
+function openTab(session) {
+  const tabId = `tab-${session.session_id}`;
+  const existingTab = document.getElementById(tabId);
+
+  if (existingTab) {
+    // Si déjà ouvert, on l'affiche
+    activateTab(tabId);
+    return;
+  }
+
+  // Créer le contenu terminal
+  const terminalDiv = document.createElement("div");
+  terminalDiv.id = tabId;
+  terminalDiv.style.width = "100%";
+  terminalDiv.style.height = "100%";
+  terminalDiv.className = "terminal-tab";
+  document.getElementById("tabs-container").appendChild(terminalDiv);
+
+  // Créer l'onglet
+  const tabButton = document.createElement("div");
+  tabButton.className = "tab";
+  tabButton.textContent = session.session_name;
+
+  const closeBtn = document.createElement("span");
+  closeBtn.textContent = "✕";
+  closeBtn.className = "close-btn";
+  closeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    terminalDiv.remove();
+    tabButton.remove();
+    // Si l'onglet actif est supprimé, activer le dernier
+    const remainingTabs = document.querySelectorAll(".tab");
+    if (remainingTabs.length > 0) {
+      activateTab(remainingTabs[remainingTabs.length - 1].dataset.tabId);
+    }
+  });
+
+  tabButton.appendChild(closeBtn);
+  tabButton.dataset.tabId = tabId;
+  tabButton.addEventListener("click", () => {
+    activateTab(tabId);
+  });
+
+  document.getElementById("tabs-bar").appendChild(tabButton);
+  document.getElementById("tabs-bar").style.display = "flex";
+
+  // Terminal
+  const term = new Terminal();
+  term.open(terminalDiv);
+  term.writeln(
+    `Connected to ${session.session_name} (${session.session_type})`
+  );
+  terminals[tabId] = term;
+
+  ipcRenderer.invoke("start-ssh-session", session);
+
+  ipcRenderer.on("ssh-data", (_event, data) => {
+    term.write(data);
+  });
+
+  term.onData((data) => {
+    ipcRenderer.send("ssh-input", data);
+  });
+
+  activateTab(tabId);
+}
+
+function activateTab(tabId) {
+  // Masquer tous les terminaux
+  document.querySelectorAll(".terminal-tab").forEach((tab) => {
+    tab.classList.remove("active");
+  });
+  document.querySelectorAll(".tab").forEach((btn) => {
+    btn.classList.remove("active");
+  });
+
+  // Afficher celui sélectionné
+  document.getElementById(tabId)?.classList.add("active");
+  document
+    .querySelector(`.tab[data-tab-id="${tabId}"]`)
+    ?.classList.add("active");
+}

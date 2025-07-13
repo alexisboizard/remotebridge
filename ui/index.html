@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Remote Brigde</title>
-    <link rel="stylesheet" href="../node_modules/xterm/css/xterm.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="../node_modules/xterm/css/xterm.css">
     <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
@@ -18,9 +18,10 @@
         </div>
         <div id="tree"></div>
     </div>
-    <div id="terminal"></div>
-    <script src="../xterm.js"></script>
-    <script src="js/side_menu.js"></script>
-    <script src="../node_modules/xterm/lib/xterm.js"></script>
+    <div id="tabs">
+        <div id="tabs-bar" class="tabs-bar"></div>
+        <div id="tabs-container" class="tabs-container"></div>
+    </div>
+    <script src="./js/renderer.js"></script>
 </body>
 </html>
