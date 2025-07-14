@@ -42,12 +42,6 @@ li>span:hover, .selected {
   width: 1em;
   margin-right: 5px;
 }
-.folder.collapsed > .toggle::before {
-  content: "▸";
-}
-.folder > .toggle::before {
-  content: "▾";
-}
 .children.collapsed {
   display: none;
 }

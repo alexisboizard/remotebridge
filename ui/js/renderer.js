@@ -22,7 +22,7 @@ function refreshStructure() {
     structureDiv.appendChild(structureHTML);
   }
 
-  // 🔁 Ajouter les gestionnaires de collapse ICI
+  // Ajouter les gestionnaires de collapse ICI
   document
     .querySelectorAll(".folder:not(.no-toggle) .toggle")
     .forEach((toggleEl) => {
@@ -34,6 +34,11 @@ function refreshStructure() {
         if (childrenEl) {
           childrenEl.classList.toggle("collapsed");
           e.currentTarget.closest(".folder").classList.toggle("collapsed");
+          if (e.currentTarget.className == "toggle fa-solid fa-folder") {
+            e.currentTarget.className = "toggle fa-solid fa-folder-open";
+          } else {
+            e.currentTarget.className = "toggle fa-solid fa-folder";
+          }
         }
       });
     });
@@ -111,15 +116,18 @@ function buildStructureHTML(node) {
     childrenUl.appendChild(sessionLi);
   });
 
-  // ✅ Ajouter le toggle uniquement si le dossier a du contenu
+  // Ajouter le toggle uniquement si le dossier a du contenu
   if (childrenUl.childNodes.length > 0) {
-    const toggle = document.createElement("span");
-    toggle.className = "toggle";
+    const toggle = document.createElement("i");
+    toggle.className = "toggle fa-solid fa-folder-open";
     folderHeader.prepend(toggle); // Ajoute la flèche
     li.appendChild(folderHeader);
     li.appendChild(childrenUl);
   } else {
-    // Dossier vide → pas de toggle
+    // Dossier vide
+    const toggle = document.createElement("i");
+    toggle.className = "toggle fa-solid fa-folder";
+    folderHeader.prepend(toggle); // Ajoute la flèche
     folderHeader.classList.add("no-toggle");
     li.appendChild(folderHeader);
   }
@@ -359,30 +367,6 @@ function deleteFolder(folderId) {
   saveData();
   loadData();
 }
-
-// Gerer le collapse des dossiers
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".folder .toggle").forEach((toggleEl) => {
-    toggleEl.addEventListener("click", (e) => {
-      e.stopPropagation();
-
-      const folder = e.currentTarget.closest(".folder");
-      console.log("Toggling folder:", folder);
-      const parent = folder.closest("li");
-      console.log("Parent element:", parent);
-      console.log(Array.from(parent.parentElement.children));
-      const children = Array.from(parent.parentElement.children).find((el) =>
-        el.classList?.contains("children")
-      );
-      console.log("Toggling folder:", children);
-
-      if (children) {
-        children.classList.toggle("collapsed");
-        folder.classList.toggle("collapsed");
-      }
-    });
-  });
-});
 
 loadData();
 

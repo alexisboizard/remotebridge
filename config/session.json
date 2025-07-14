@@ -36,6 +36,11 @@
       "folder_id": "F1752425961267",
       "folder_name": "Nouveau Dossier 1",
       "parent": "F1752422462435"
+    },
+    {
+      "folder_id": "F1752485188258",
+      "folder_name": "Nouveau Dossier",
+      "parent": "root"
     }
   ]
 }
