@@ -2,12 +2,12 @@
   "sessions": [
     {
       "session_id": "S175242582",
-      "session_name": "TEST 2",
+      "session_name": "PVE",
       "session_type": "SSH",
-      "host": "192.168.1.149",
+      "host": "192.168.1.2",
       "port": "22",
-      "username": "alexisboizard",
-      "password": "",
+      "username": "root",
+      "password": "203Lavieestcourte",
       "folder_id": "F175240563"
     },
     {

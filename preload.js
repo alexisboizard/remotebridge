@@ -1,5 +1,6 @@
 // preload.js
 const { contextBridge, ipcRenderer } = require("electron");
+const { Terminal } = require("xterm");
 
 contextBridge.exposeInMainWorld("api", {
   loadData: () => ipcRenderer.invoke("load-data"),
@@ -14,4 +15,21 @@ contextBridge.exposeInMainWorld("api", {
   sendSSHInput: (data) => ipcRenderer.send("ssh-input", data),
   startSSHSession: (session) =>
     ipcRenderer.invoke("start-ssh-session", session),
+  createTerminal: (options = {}) => {
+    const term = new Terminal(options);
+    return {
+      open: (element) => term.open(element),
+      write: (data) => term.write(data),
+      onData: (callback) => term.onData(callback),
+      dispose: () => term.dispose(),
+      fit: () => {
+        // Tu peux ajouter un fit si tu utilises xterm-addon-fit
+      },
+    };
+  },
+  startSshSession: (session) =>
+    ipcRenderer.invoke("start-ssh-session", session),
+  send: (channel, data) => ipcRenderer.send(channel, data),
+  on: (channel, callback) =>
+    ipcRenderer.on(channel, (_, data) => callback(data)),
 });

@@ -12,6 +12,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      sandbox: false,
       preload: path.join(__dirname, "preload.js"),
     },
   });
@@ -156,30 +157,41 @@ ipcMain.handle("show-context-menu", (event, contextType, contextData) => {
 });
 
 // Gérer les connexions SSH
-ipcMain.handle("start-ssh-session", (event, config) => {
-  const win = event.sender;
+ipcMain.handle("start-ssh-session", async (event, session) => {
+  return new Promise((resolve, reject) => {
+    const conn = new Client();
 
-  const conn = new Client();
-  conn.on("ready", () => {
-    const shell = conn.shell((err, stream) => {
-      if (err) return;
+    conn.on("ready", () => {
+      const shell = conn.shell({ term: "xterm-color" }, (err, stream) => {
+        if (err) return reject(err);
 
-      // Buffer de communication
-      stream.on("data", (data) => {
-        win.send("ssh-data", data.toString());
-      });
+        const sessionId = `ssh-${Date.now()}`;
+        resolve(sessionId);
 
-      // Réception depuis xterm (frontend)
-      ipcMain.on("ssh-input", (event2, input) => {
-        stream.write(input);
+        stream.on("data", (data) => {
+          event.sender.send(`ssh-data-${sessionId}`, data.toString());
+        });
+
+        ipcMain.on(`ssh-input-${sessionId}`, (_, input) => {
+          stream.write(input);
+        });
+
+        conn.on("close", () => {
+          event.sender.send(`ssh-end-${sessionId}`);
+        });
       });
     });
-  });
-  conn.connect({
-    host: config.host,
-    port: config.port,
-    username: config.username,
-    password: config.password,
+
+    conn.on("error", (err) => {
+      reject(err);
+    });
+
+    conn.connect({
+      host: session.host,
+      port: parseInt(session.port, 10),
+      username: session.username,
+      password: session.password,
+    });
   });
 });
 

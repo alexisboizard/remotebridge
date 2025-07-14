@@ -479,22 +479,17 @@ function openTab(session) {
   document.getElementById("tabs-bar").style.display = "flex";
 
   // Terminal
-  const term = new Terminal();
-  term.open(terminalDiv);
-  term.writeln(
-    `Connected to ${session.session_name} (${session.session_type})`
-  );
-  terminals[tabId] = term;
-
-  window.api.startSSHSession(session);
-
-  ipcRenderer.on("ssh-data", (_event, data) => {
-    term.write(data);
+  const termWrapper = window.api.createTerminal({
+    cols: 80,
+    rows: 24,
+    cursorBlink: true,
   });
+  termWrapper.open(terminalDiv);
+  termWrapper.write("Bienvenue dans xterm.js\r\n");
 
-  term.onData((data) => {
-    window.api.sshInput({ session_id: session.session_id, input: data });
-  });
+  terminals[tabId] = termWrapper;
+
+  openSshTerminal(session, termWrapper);
 
   activateTab(tabId);
 }
@@ -513,4 +508,20 @@ function activateTab(tabId) {
   document
     .querySelector(`.tab[data-tab-id="${tabId}"]`)
     ?.classList.add("active");
+}
+
+async function openSshTerminal(session, terminal) {
+  const sessionId = await window.api.startSshSession(session);
+
+  window.api.on(`ssh-data-${sessionId}`, (data) => {
+    terminal.write(data);
+  });
+
+  window.api.on(`ssh-end-${sessionId}`, () => {
+    terminal.write("\r\n*** Connexion terminée ***\r\n");
+  });
+
+  terminal.onData((data) => {
+    window.api.send(`ssh-input-${sessionId}`, data);
+  });
 }
