@@ -1,7 +1,4 @@
 const saved_sessions_file = "../config/session.json";
-const { ipcRenderer, ipcMain } = require("electron");
-const { glob } = require("original-fs");
-const { Terminal } = require("xterm");
 
 let global_data = { sessions: [], folders: [] };
 let selected_element = [null, null];
@@ -9,7 +6,7 @@ let hoveredElement = null;
 const terminals = {}; // pour gérer plusieurs onglets si nécessaire
 
 async function loadData() {
-  global_data = await ipcRenderer.invoke("load-data");
+  global_data = await window.api.loadData();
   refreshStructure(global_data);
 }
 
@@ -45,7 +42,7 @@ function refreshStructure() {
 }
 
 function saveData() {
-  ipcRenderer.send("save-data", global_data);
+  window.api.saveData(global_data);
 }
 
 function buildTree() {
@@ -86,9 +83,58 @@ function buildStructureHTML(node) {
 
   // Création de l'en-tête du dossier
   const folderHeader = document.createElement("span");
+  folderHeader.draggable = true;
   folderHeader.className = "folder";
   folderHeader.id = node.folder_id;
   folderHeader.textContent = node.folder_name;
+
+  folderHeader.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("type", "folder");
+    e.dataTransfer.setData("id", node.folder_id);
+  });
+
+  folderHeader.addEventListener("dragover", (e) => {
+    e.preventDefault(); // autorise le drop
+  });
+
+  folderHeader.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    folderHeader.classList.add("drag-over");
+  });
+
+  folderHeader.addEventListener("dragleave", () => {
+    folderHeader.classList.remove("drag-over");
+  });
+
+  folderHeader.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const draggedType = e.dataTransfer.getData("type");
+    const draggedId = e.dataTransfer.getData("id");
+    const targetFolderId = node.folder_id;
+    console.log(draggedType);
+
+    if (draggedType === "session") {
+      console.log(e.dataTransfer);
+      const session = global_data.sessions.find(
+        (s) => s.session_id === draggedId
+      );
+      if (session) {
+        session.folder_id = targetFolderId;
+      }
+    } else if (draggedType === "folder") {
+      const folder = global_data.folders.find((f) => f.folder_id === draggedId);
+      if (
+        folder &&
+        folder.folder_id !== targetFolderId &&
+        folder.folder_id !== "root"
+      ) {
+        folder.parent = targetFolderId;
+      }
+    }
+
+    saveData();
+    refreshStructure();
+  });
 
   const childrenUl = document.createElement("ul");
   childrenUl.className = "children";
@@ -102,16 +148,18 @@ function buildStructureHTML(node) {
   (node.sessions || []).forEach((session) => {
     const sessionLi = document.createElement("li");
     const sessionSpan = document.createElement("span");
+    sessionSpan.draggable = true;
     sessionSpan.className = "session";
     sessionSpan.id = session.session_id;
     sessionSpan.textContent =
       session.session_name.length > 15
         ? session.session_name.substring(0, 12) + "..."
         : session.session_name;
-    sessionSpan.setAttribute(
-      "onclick",
-      `showSessionDetails('${session.session_id}', '${session.session_name}', '${session.session_type}')`
-    );
+
+    sessionSpan.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("type", "session");
+      e.dataTransfer.setData("id", session.session_id);
+    });
     sessionLi.appendChild(sessionSpan);
     childrenUl.appendChild(sessionLi);
   });
@@ -199,12 +247,11 @@ function updateName(id, newName) {
 }
 
 function openPopup() {
-  console.log("Opening popup for element:", selected_element);
-  const data =
-    selected_element[0] == null && hoveredElement != null
-      ? hoveredElement.id
+  const selectedId =
+    selected_element[0] == null
+      ? document.getElementById("root").id
       : selected_element[0].id;
-  ipcRenderer.postMessage("open-popup", data);
+  window.api.openPopup(selectedId);
 }
 
 if (document.getElementById("newSessionForm")) {
@@ -236,7 +283,7 @@ if (document.getElementById("newSessionForm")) {
 
 // Gestion des actions du menu contextuel
 
-ipcRenderer.on("context-action", (event, args) => {
+window.api.onContextAction((args) => {
   // Actions pour les dossiers
   if (args.action === "add-session") {
     openPopup();
@@ -293,7 +340,7 @@ document.addEventListener("contextmenu", function (e) {
         ? hoveredElement.id
         : selected_element[0].id;
 
-    ipcRenderer.invoke("show-context-menu", "folder", { folder_id: folderId });
+    window.api.showContextMenu("folder", { folder_id: folderId });
   }
 
   if (sessionEl) {
@@ -307,9 +354,7 @@ document.addEventListener("contextmenu", function (e) {
         ? hoveredElement.id
         : selected_element[0].id;
 
-    ipcRenderer.invoke("show-context-menu", "session", {
-      session_id: sessionId,
-    });
+    window.api.showContextMenu("session", { session_id: sessionId });
   }
 });
 
@@ -340,7 +385,7 @@ document.addEventListener("mouseover", function (e) {
   }
 });
 
-ipcRenderer.on("refresh-structure", (event) => {
+window.api.onRefreshStructure(() => {
   console.log("Refreshing structure in all windows");
   loadData();
 });
@@ -441,14 +486,14 @@ function openTab(session) {
   );
   terminals[tabId] = term;
 
-  ipcRenderer.invoke("start-ssh-session", session);
+  window.api.startSSHSession(session);
 
   ipcRenderer.on("ssh-data", (_event, data) => {
     term.write(data);
   });
 
   term.onData((data) => {
-    ipcRenderer.send("ssh-input", data);
+    window.api.sshInput({ session_id: session.session_id, input: data });
   });
 
   activateTab(tabId);

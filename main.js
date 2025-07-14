@@ -5,37 +5,14 @@ const { Client } = require("ssh2");
 //const pty = require("node-pty");
 let mainWindow;
 
-ipcMain.on("save-data", (event, data) => {
-  const dataPath = path.join(__dirname, "config/session.json");
-  console.log("Saving data to", dataPath);
-  try {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-    console.log("Data saved successfully");
-  } catch (err) {
-    console.error("Error saving data:", err);
-  }
-});
-
-ipcMain.handle("load-data", async (event) => {
-  const dataPath = path.join(__dirname, "config/session.json");
-  console.log("Loading data from", dataPath);
-  try {
-    const data = fs.readFileSync(dataPath, "utf8");
-    return JSON.parse(data);
-  } catch (err) {
-    console.error("Error reading file:", err);
-    return { sessions: [], folders: [] };
-  }
-});
-
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 720,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      preload: "preload.js",
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
     },
   });
   mainWindow.loadFile(path.join(__dirname, "ui/index.html"));
@@ -63,8 +40,9 @@ function createPopupWindow(selectedElement) {
     parent: mainWindow,
     modal: true,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: "preload.js",
     },
   });
   popupWindow.webContents.on("did-finish-load", () => {
@@ -89,6 +67,7 @@ ipcMain.on("open-popup", (e, selected_element) => {
   createPopupWindow(selected_element);
 });
 
+// Permet de rafraîchir la structure dans toutes les fenêtres
 ipcMain.on("refresh-structure", (event) => {
   BrowserWindow.getAllWindows().forEach((win) => {
     win.webContents.send("refresh-structure");
@@ -202,4 +181,29 @@ ipcMain.handle("start-ssh-session", (event, config) => {
     username: config.username,
     password: config.password,
   });
+});
+
+// Gérer la sauvegarde des sessions
+ipcMain.on("save-data", (event, data) => {
+  const dataPath = path.join(__dirname, "config/session.json");
+  console.log("Saving data to", dataPath);
+  try {
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+    console.log("Data saved successfully");
+  } catch (err) {
+    console.error("Error saving data:", err);
+  }
+});
+
+// Gérer le chargmement des sessions
+ipcMain.handle("load-data", async (event) => {
+  const dataPath = path.join(__dirname, "config/session.json");
+  console.log("Loading data from", dataPath);
+  try {
+    const data = fs.readFileSync(dataPath, "utf8");
+    return JSON.parse(data);
+  } catch (err) {
+    console.error("Error reading file:", err);
+    return { sessions: [], folders: [] };
+  }
 });

@@ -20,6 +20,11 @@ li>span:hover, .selected {
 .folder {
     font-weight: initial;  
 }
+
+.folder.drag-over {
+  background-color: rgba(74, 77, 80, 0.2); /* bleu clair semi-transparent */
+  border-radius: 5px;
+}
 #side_menu {
     display: flex;
     flex-direction: column;

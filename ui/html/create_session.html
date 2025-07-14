@@ -12,30 +12,32 @@
         input, button {
             margin: 10px 0;
             padding: 8px;
-            width: 100%;
+            width: 75%;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            margin: 5%;
+        }
+        h2 {
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <h2>Créer une Nouvelle Session</h2>
     <form id="newSessionForm">
-        <label for="sessionName">Nom de la Session:</label>
-        <input type="text" id="sessionName" name="sessionName" required>
+        <input type="text" id="sessionName" name="sessionName" placeholder="Nom de la session" required>
 
-        <label for="sessionType">Type de Session:</label>
-        <input list="sessionTypeList" id="sessionType" name="sessionType" required>
+        <input list="sessionTypeList" id="sessionType" name="sessionType" placeholder="Type de session" required>
 
-        <label for="host">Hôte:</label>
-        <input type="text" id="host" name="host">
+        <input type="text" id="host" name="host" placeholder="Hôte" required>
 
-        <label for="port">Port:</label>
-        <input list="portList" id="port" name="port">
+        <input list="portList" id="port" name="port" placeholder="Port">
 
-        <label for="username">Nom d'utilisateur:</label>
-        <input type="text" id="username" name="username">
+        <input type="text" id="username" name="username" placeholder="Nom d'utilisateur" required>
 
-        <label for="password">Mot de passe:</label>
-        <input type="password" id="password" name="password">
+        <input type="password" id="password" name="password" placeholder="Mot de passe" required>
 
         <button type="submit">Créer</button>
     </form>
