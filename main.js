@@ -195,6 +195,69 @@ ipcMain.handle("start-ssh-session", async (event, session) => {
   });
 });
 
+const sftpClients = {}; // clé : sessionId, valeur : {conn, sftp}
+
+ipcMain.handle("start-sftp-session", async (event, session) => {
+  return new Promise((resolve, reject) => {
+    const conn = new Client();
+
+    conn.on("ready", () => {
+      conn.sftp((err, sftp) => {
+        if (err) return reject(err);
+
+        const sessionId = `sftp-${Date.now()}`;
+        sftpClients[sessionId] = { conn, sftp };
+
+        resolve(sessionId);
+      });
+    });
+
+    conn.on("error", (err) => reject(err));
+
+    conn.connect({
+      host: session.host,
+      port: parseInt(session.port, 10),
+      username: session.username,
+      password: session.password,
+    });
+  });
+});
+
+ipcMain.handle("sftp-read-dir", async (_, sessionId, remotePath) => {
+  const { sftp } = sftpClients[sessionId];
+  return new Promise((resolve, reject) => {
+    sftp.readdir(remotePath, (err, list) => {
+      if (err) return reject(err);
+      resolve(
+        list.map((item) => ({
+          filename: item.filename,
+          longname: item.longname,
+        }))
+      );
+    });
+  });
+});
+
+ipcMain.handle("sftp-download", async (_, sessionId, remotePath, localPath) => {
+  const { sftp } = sftpClients[sessionId];
+  return new Promise((resolve, reject) => {
+    sftp.fastGet(remotePath, localPath, {}, (err) => {
+      if (err) return reject(err);
+      resolve("Download complete");
+    });
+  });
+});
+
+ipcMain.handle("sftp-upload", async (_, sessionId, localPath, remotePath) => {
+  const { sftp } = sftpClients[sessionId];
+  return new Promise((resolve, reject) => {
+    sftp.fastPut(localPath, remotePath, {}, (err) => {
+      if (err) return reject(err);
+      resolve("Upload complete");
+    });
+  });
+});
+
 // Gérer la sauvegarde des sessions
 ipcMain.on("save-data", (event, data) => {
   const dataPath = path.join(__dirname, "config/session.json");

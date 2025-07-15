@@ -4,6 +4,8 @@ let global_data = { sessions: [], folders: [] };
 let selected_element = [null, null];
 let hoveredElement = null;
 const terminals = {}; // pour gérer plusieurs onglets si nécessaire
+let currentSftpSession = null;
+let currentRemotePath = "/"; // par défaut
 
 async function loadData() {
   global_data = await window.api.loadData();
@@ -490,6 +492,7 @@ function openTab(session) {
   terminals[tabId] = termWrapper;
 
   openSshTerminal(session, termWrapper);
+  initSftp(session);
 
   activateTab(tabId);
 }
@@ -520,8 +523,113 @@ async function openSshTerminal(session, terminal) {
   window.api.on(`ssh-end-${sessionId}`, () => {
     terminal.write("\r\n*** Connexion terminée ***\r\n");
   });
-
+  let command = "";
   terminal.onData((data) => {
     window.api.send(`ssh-input-${sessionId}`, data);
+    if (data === "\r") {
+      console.log(command);
+      let cmd = command.trim().split(" ")[0];
+      let path = command.trim().split(" ")[1];
+      path;
+      if (cmd == "cd") {
+        if (path == "..") {
+          console.log(currentRemotePath.split("/"));
+        }
+        loadRemoteDir(command.trim().split(" ")[1]);
+      }
+      command = "";
+    }
+    command += data;
+  });
+}
+
+async function browseSftp(session) {
+  const sessionId = await window.api.startSftpSession(session);
+  const remotePath = "/home"; // ou autre
+
+  const list = await window.api.readDir(sessionId, remotePath);
+
+  list.forEach((item) => {
+    console.log(item.filename, item.longname);
+    // Tu peux les afficher dans une UI de type "explorateur"
+  });
+}
+
+async function initSftp(session) {
+  currentSftpSession = await window.api.startSftpSession(session);
+  loadRemoteDir(currentRemotePath);
+}
+
+async function loadRemoteDir(remotePath) {
+  currentRemotePath = remotePath;
+  const list = await window.api.readDir(currentSftpSession, remotePath);
+  const ul = document.getElementById("sftp-list");
+  ul.innerHTML = "";
+
+  list.forEach((item) => {
+    const li = document.createElement("li");
+    li.style.cursor = "default";
+
+    const icon = document.createElement("span");
+    icon.style.marginRight = "8px";
+
+    const isDir = item.longname && item.longname[0] === "d";
+    if (isDir) {
+      icon.textContent = "📁";
+      li.style.fontWeight = "bold";
+      li.style.cursor = "pointer";
+      li.onclick = () => {
+        const newPath = remotePath.endsWith("/")
+          ? remotePath + item.filename
+          : remotePath + "/" + item.filename;
+        loadRemoteDir(newPath);
+      };
+    } else {
+      icon.textContent = "📄";
+    }
+
+    li.appendChild(icon);
+    li.appendChild(document.createTextNode(item.filename));
+    ul.appendChild(li);
+  });
+  updateBreadcrumb(currentRemotePath);
+}
+
+function triggerUpload() {
+  document.getElementById("sftp-upload").click();
+}
+
+document.getElementById("sftp-upload").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const localPath = file.path;
+  const remotePath = `${currentRemotePath}/${file.name}`;
+
+  await window.api.upload(currentSftpSession, localPath, remotePath);
+  await loadRemoteDir(currentRemotePath);
+});
+
+function updateBreadcrumb(path) {
+  const breadcrumb = document.getElementById("breadcrumb");
+  breadcrumb.innerHTML = "";
+
+  const parts = path.split("/").filter((p) => p.length > 0);
+  let accumulatedPath = "";
+
+  const rootSpan = document.createElement("span");
+  rootSpan.textContent = "/";
+  rootSpan.style.cursor = "pointer";
+  rootSpan.onclick = () => loadRemoteDir("/");
+  breadcrumb.appendChild(rootSpan);
+
+  parts.forEach((part, index) => {
+    breadcrumb.appendChild(document.createTextNode(" / "));
+    accumulatedPath += "/" + part;
+    const partSpan = document.createElement("span");
+    partSpan.textContent = part;
+    partSpan.style.cursor = "pointer";
+    partSpan.onclick = () => loadRemoteDir(accumulatedPath);
+    breadcrumb.appendChild(partSpan);
   });
 }

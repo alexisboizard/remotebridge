@@ -18,10 +18,19 @@
         </div>
         <div id="tree"></div>
     </div>
-    <div id="tabs">
-        <div id="tabs-bar" class="tabs-bar"></div>
-        <div id="tabs-container" class="tabs-container"></div>
+    <div class="content">
+        <div id="tabs">
+            <div id="tabs-bar" class="tabs-bar"></div>
+            <div id="tabs-container" class="tabs-container"></div>
+        </div>
+        <div id="sftp-ui">
+            <input type="file" id="sftp-upload" style="display:none;" />
+            <!--<button onclick="triggerUpload()">Upload un fichier</button>-->
+            <div id="breadcrumb"></div>
+            <ul id="sftp-list"></ul>
+        </div>
     </div>
+
     <script src="./js/renderer.js"></script>
 </body>
 </html>

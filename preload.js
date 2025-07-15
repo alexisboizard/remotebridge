@@ -32,4 +32,12 @@ contextBridge.exposeInMainWorld("api", {
   send: (channel, data) => ipcRenderer.send(channel, data),
   on: (channel, callback) =>
     ipcRenderer.on(channel, (_, data) => callback(data)),
+  startSftpSession: (session) =>
+    ipcRenderer.invoke("start-sftp-session", session),
+  readDir: (sessionId, path) =>
+    ipcRenderer.invoke("sftp-read-dir", sessionId, path),
+  download: (sessionId, remotePath, localPath) =>
+    ipcRenderer.invoke("sftp-download", sessionId, remotePath, localPath),
+  upload: (sessionId, localPath, remotePath) =>
+    ipcRenderer.invoke("sftp-upload", sessionId, localPath, remotePath),
 });
